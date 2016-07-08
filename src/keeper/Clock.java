@@ -42,6 +42,7 @@ public final class Clock {
             case HVC:
                 return new HVC(self, eps);
             case HLC:
+                return new HLC();
             default:
                 // unknown type
                 return null;
