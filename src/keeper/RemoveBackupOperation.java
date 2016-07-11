@@ -25,7 +25,8 @@ public class RemoveBackupOperation extends AbstractOperation implements BackupOp
         Clock.update(time);
         KVService service = getService();
         Container container = service.containers[getPartitionId()];
-        container.remove(key);
+        Data oldValue = container.remove(key);
+        service.log().append(new LogEntry(time, key, oldValue, null));
     }
 
     @Override

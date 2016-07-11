@@ -13,6 +13,11 @@ public class KVService implements ManagedService, RemoteService, MigrationAwareS
     public static final String NAME = "KVService";
     Container[] containers;
     private NodeEngine nodeEngine;
+    private Log log;
+
+    public Log log() {
+        return log;
+    }
 
     @Override
     public void init(NodeEngine nodeEngine, Properties properties) {
@@ -21,6 +26,7 @@ public class KVService implements ManagedService, RemoteService, MigrationAwareS
         for (int i=0; i<containers.length; i++) {
             containers[i] = new Container();
         }
+        log = new Log();
     }
 
     @Override

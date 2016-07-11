@@ -28,6 +28,7 @@ public class RemoveOperation extends AbstractOperation implements PartitionAware
         KVService service = getService();
         Container container = service.containers[getPartitionId()];
         oldValue = container.remove(key);
+        service.log().append(new LogEntry(time, key, oldValue, null));
     }
 
     @Override

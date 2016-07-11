@@ -29,6 +29,7 @@ public class PutOperation extends AbstractOperation implements PartitionAwareOpe
         KVService service = getService();
         Container container = service.containers[getPartitionId()];
         oldValue = container.put(key, value);
+        service.log().append(new LogEntry(time, key, oldValue, value));
     }
 
     @Override

@@ -1,5 +1,7 @@
 package keeper;
 
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ServiceConfig;
 import com.hazelcast.core.Hazelcast;
@@ -25,5 +27,14 @@ public class Node {
         int x = kv.get(1);
         assert x == 1;
         kv.remove(1);
+
+        ClientConfig clientConfig = new ClientConfig();
+
+        HazelcastInstance client = HazelcastClient.newHazelcastClient();
+        KV<Integer, Integer> kv2 = client.getDistributedObject("keeper.KVService", "");
+        kv2.put(2, 2);
+        assert kv2.get(2) == 2;
+        kv2.remove(2);
+
     }
 }

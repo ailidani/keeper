@@ -26,7 +26,8 @@ public class PutBackupOperation extends AbstractOperation implements BackupOpera
         Clock.update(time);
         KVService service = getService();
         Container container = service.containers[getPartitionId()];
-        container.put(key, value);
+        Data oldValue = container.put(key, value);
+        service.log().append(new LogEntry(time, key, oldValue, value));
     }
 
     @Override

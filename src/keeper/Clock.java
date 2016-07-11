@@ -19,9 +19,10 @@ public final class Clock {
 
     private Clock() {}
 
-    public abstract static class HClock {
+    public static abstract class HClock {
         protected abstract byte[] now();
         protected abstract void update(byte[] that);
+        protected abstract int compare(byte[] x, byte[] y);
     }
 
     static {
@@ -29,7 +30,7 @@ public final class Clock {
     }
 
     private static HClock initClock() {
-        type = TYPE.valueOf(System.getProperty(CLOCK_TYPE, "HVC"));
+        type = TYPE.valueOf(System.getProperty(CLOCK_TYPE, "HLC"));
         long eps;
         String eps_str = System.getProperty(CLOCK_EPS);
         if (eps_str != null) {
@@ -63,13 +64,24 @@ public final class Clock {
         CLOCK.update(that);
     }
 
+    public static int compare(byte[] x, byte[] y) {
+        return CLOCK.compare(x, y);
+    }
+
     public static TYPE getType() {
         return type;
     }
 
-    private static final class HLC extends HClock {
+    private final static class HLC extends HClock {
         private long walltime;
         private long logical;
+
+        private byte[] toByte() {
+            ByteBuffer buffer = ByteBuffer.allocate(2 * Long.BYTES);
+            buffer.putLong(walltime);
+            buffer.putLong(logical);
+            return buffer.array();
+        }
 
         protected byte[] now() {
             PT();
@@ -107,6 +119,26 @@ public final class Clock {
                     logical = thatL;
                 logical++;
             }
+        }
+
+        protected int compare(byte[] x, byte[] y) {
+            ByteBuffer buffer = ByteBuffer.allocate(2 * Long.BYTES);
+            buffer.put(x);
+            buffer.flip();
+            long xw = buffer.getLong();
+            long xl = buffer.getLong();
+            buffer.flip();
+            buffer.put(y);
+            buffer.flip();
+            long yw = buffer.getLong();
+            long yl = buffer.getLong();
+            if (xw < yw || (xw == yw && xl < yl)) {
+                return -1;
+            } else if (xw > yw || (xw == yw && xl > yl)) {
+                return 1;
+            }
+            return 0;
+
         }
     }
 
@@ -160,6 +192,11 @@ public final class Clock {
                     hvc.remove(uuid);
                 }
             }
+        }
+
+        protected int compare(byte[] x, byte[] y) {
+            // TODO
+            return 0;
         }
 
     }
