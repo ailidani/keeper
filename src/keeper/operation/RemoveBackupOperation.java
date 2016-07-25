@@ -1,21 +1,25 @@
-package keeper;
+package keeper.operation;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.AbstractOperation;
-import com.hazelcast.spi.PartitionAwareOperation;
+import com.hazelcast.spi.BackupOperation;
+import keeper.Clock;
+import keeper.Container;
+import keeper.KVService;
+import keeper.LogEntry;
 
 import java.io.IOException;
 
-public class GetOperation extends AbstractOperation implements PartitionAwareOperation {
+public class RemoveBackupOperation extends AbstractOperation implements BackupOperation {
 
-    private Data key, value;
+    private Data key;
     private byte[] time;
 
-    public GetOperation() {}
+    public RemoveBackupOperation() {}
 
-    public GetOperation(Data key) {
+    public RemoveBackupOperation(Data key) {
         this.key = key;
         this.time = Clock.now();
     }
@@ -25,30 +29,21 @@ public class GetOperation extends AbstractOperation implements PartitionAwareOpe
         Clock.update(time);
         KVService service = getService();
         Container container = service.containers[getPartitionId()];
-        value = container.get(key);
-    }
-
-    @Override
-    public boolean returnsResponse() {
-        return true;
-    }
-
-    @Override
-    public Object getResponse() {
-        return value;
+        Data oldValue = container.remove(key);
+        service.log().append(new LogEntry(time, key, oldValue, null));
     }
 
     @Override
     protected void writeInternal(ObjectDataOutput out) throws IOException {
         super.writeInternal(out);
-        out.writeObject(key);
-        out.write(time);
+        out.writeData(key);
+        out.writeByteArray(time);
     }
 
     @Override
     protected void readInternal(ObjectDataInput in) throws IOException {
         super.readInternal(in);
-        key = in.readObject();
+        key = in.readData();
         time = in.readByteArray();
     }
 

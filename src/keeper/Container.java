@@ -11,28 +11,32 @@ public class Container {
 
     private final ConcurrentMap<Data, Data> kvs = new ConcurrentHashMap<>(1000);
 
-    Data get(Data key) {
+    public Data get(Data key) {
         return kvs.get(key);
     }
 
     // TODO write to a local log
-    Data put(Data key, Data value) {
+    public Data put(Data key, Data value) {
         return kvs.put(key, value);
     }
 
-    Data remove(Data key) {
+    public Data remove(Data key) {
         return kvs.remove(key);
     }
 
-    void clear() {
+    public void clear() {
         kvs.clear();
     }
 
-    void applyMigrationData(Map<Data, Data> migrationData) {
+    public void applyMigrationData(Map<Data, Data> migrationData) {
         kvs.putAll(migrationData);
     }
 
-    Map<Data, Data> toMigrationData() {
+    public Map<Data, Data> toMigrationData() {
+        return new HashMap<>(kvs);
+    }
+
+    public Map<Data, Data> snapshot() {
         return new HashMap<>(kvs);
     }
 

@@ -1,11 +1,15 @@
 package keeper;
 
 import com.hazelcast.nio.serialization.Data;
-import com.hazelcast.spi.AbstractDistributedObject;
-import com.hazelcast.spi.InvocationBuilder;
-import com.hazelcast.spi.NodeEngine;
+import com.hazelcast.spi.*;
+import com.hazelcast.spi.serialization.SerializationService;
 import com.hazelcast.util.ExceptionUtil;
+import keeper.operation.GetOperation;
+import keeper.operation.PutOperation;
+import keeper.operation.RemoveOperation;
+import keeper.operation.SnapshotOperationFactory;
 
+import java.util.Map;
 import java.util.concurrent.Future;
 
 public class KVProxy<K, V> extends AbstractDistributedObject<KVService> implements KV<K, V> {
@@ -66,6 +70,26 @@ public class KVProxy<K, V> extends AbstractDistributedObject<KVService> implemen
             ExceptionUtil.rethrow(e);
         }
         return null;
+    }
+
+    @Override
+    public boolean snapshot() {
+        byte[] now = Clock.now();
+        NodeEngine nodeEngine = getNodeEngine();
+        try {
+            SnapshotOperationFactory factory = new SnapshotOperationFactory(now);
+            Map<Integer, Object> results = nodeEngine.getOperationService().invokeOnAllPartitions(KVService.NAME, factory);
+            SerializationService ss = nodeEngine.getSerializationService();
+            for (Object result : results.values()) {
+                if (!(Boolean) ss.toObject(result)) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            ExceptionUtil.rethrow(e);
+        }
+        return false;
     }
 
     @Override

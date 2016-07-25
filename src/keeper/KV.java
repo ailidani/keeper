@@ -10,4 +10,6 @@ public interface KV<K, V> extends DistributedObject {
 
     V remove(K key);
 
+    boolean snapshot();
+
 }

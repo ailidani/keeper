@@ -4,6 +4,7 @@ import com.hazelcast.core.DistributedObject;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.*;
 import com.hazelcast.spi.partition.MigrationEndpoint;
+import keeper.operation.MigrationOperation;
 
 import java.util.Map;
 import java.util.Properties;
@@ -11,7 +12,7 @@ import java.util.Properties;
 public class KVService implements ManagedService, RemoteService, MigrationAwareService {
 
     public static final String NAME = "KVService";
-    Container[] containers;
+    public Container[] containers;
     private NodeEngine nodeEngine;
     private Log log;
 
@@ -42,7 +43,7 @@ public class KVService implements ManagedService, RemoteService, MigrationAwareS
     }
 
     @Override
-    public void destroyDistributedObject(String name) {}
+    public void destroyDistributedObject(String name) { }
 
     @Override
     public Operation prepareReplicationOperation(PartitionReplicationEvent e) {
@@ -55,7 +56,7 @@ public class KVService implements ManagedService, RemoteService, MigrationAwareS
     }
 
     @Override
-    public void beforeMigration(PartitionMigrationEvent e) {}
+    public void beforeMigration(PartitionMigrationEvent e) { }
 
     @Override
     public void commitMigration(PartitionMigrationEvent e) {

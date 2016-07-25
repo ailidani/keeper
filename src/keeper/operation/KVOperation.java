@@ -1,8 +1,9 @@
-package keeper;
+package keeper.operation;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.spi.AbstractOperation;
+import keeper.Clock;
 
 import java.io.IOException;
 

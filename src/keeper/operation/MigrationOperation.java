@@ -1,9 +1,12 @@
-package keeper;
+package keeper.operation;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.AbstractOperation;
+import keeper.Clock;
+import keeper.Container;
+import keeper.KVService;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,7 +40,7 @@ public class MigrationOperation extends AbstractOperation {
             out.writeData(entry.getKey());
             out.writeData(entry.getValue());
         }
-        out.write(time);
+        out.writeByteArray(time);
     }
 
     @Override

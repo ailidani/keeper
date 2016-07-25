@@ -28,4 +28,8 @@ public class Log {
     public long length() {
         return length;
     }
+
+    public LogEntry tail() {
+        return tail;
+    }
 }

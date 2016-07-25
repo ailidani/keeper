@@ -1,23 +1,25 @@
-package keeper;
+package keeper.operation;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.AbstractOperation;
-import com.hazelcast.spi.BackupAwareOperation;
-import com.hazelcast.spi.Operation;
 import com.hazelcast.spi.PartitionAwareOperation;
+import com.hazelcast.spi.ReadonlyOperation;
+import keeper.Clock;
+import keeper.Container;
+import keeper.KVService;
 
 import java.io.IOException;
 
-public class RemoveOperation extends AbstractOperation implements PartitionAwareOperation, BackupAwareOperation {
+public class GetOperation extends AbstractOperation implements PartitionAwareOperation, ReadonlyOperation {
 
-    private Data key, oldValue;
+    private Data key, value;
     private byte[] time;
 
-    public RemoveOperation() {}
+    public GetOperation() {}
 
-    public RemoveOperation(Data key) {
+    public GetOperation(Data key) {
         this.key = key;
         this.time = Clock.now();
     }
@@ -27,8 +29,7 @@ public class RemoveOperation extends AbstractOperation implements PartitionAware
         Clock.update(time);
         KVService service = getService();
         Container container = service.containers[getPartitionId()];
-        oldValue = container.remove(key);
-        service.log().append(new LogEntry(time, key, oldValue, null));
+        value = container.get(key);
     }
 
     @Override
@@ -38,40 +39,25 @@ public class RemoveOperation extends AbstractOperation implements PartitionAware
 
     @Override
     public Object getResponse() {
-        return oldValue;
-    }
-
-    @Override
-    public boolean shouldBackup() {
-        return true;
-    }
-
-    @Override
-    public int getSyncBackupCount() {
-        return 1;
-    }
-
-    @Override
-    public int getAsyncBackupCount() {
-        return 0;
-    }
-
-    @Override
-    public Operation getBackupOperation() {
-        return new RemoveBackupOperation(key);
+        return value;
     }
 
     @Override
     protected void writeInternal(ObjectDataOutput out) throws IOException {
         super.writeInternal(out);
-        out.writeData(key);
+        out.writeObject(key);
         out.write(time);
     }
 
     @Override
     protected void readInternal(ObjectDataInput in) throws IOException {
         super.readInternal(in);
-        key = in.readData();
+        key = in.readObject();
         time = in.readByteArray();
+    }
+
+    @Override
+    public String getServiceName() {
+        return KVService.NAME;
     }
 }
